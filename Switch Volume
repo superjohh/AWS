@@ -1,0 +1,74 @@
+var AWS = require('aws-sdk');
+AWS.config.update({region: 'ap-south-1'});
+var ec2 = new AWS.EC2({apiVersion: '2016-11-15'});
+
+function initiatebackup()
+{
+ stopinstance();   
+}
+
+function stopinstance() 
+{
+    console.log("Ok");
+    var params = {
+  InstanceIds: [
+     "i-077c5d6f06bef7006"
+  ]
+ };
+ ec2.stopInstances(params, function(err, data) {
+   if (err) console.log(err, err.stack); // an error occurred
+   else
+   {
+       detachvolume();
+       console.log(data);           // successful response
+   }
+ });
+}
+
+function detachvolume()
+{
+     var params = {
+  VolumeId: "vol-06a76cbca36311796"
+ };
+ ec2.detachVolume(params, function(err, data) {
+   if (err) console.log(err, err.stack); // an error occurred
+   else 
+   {
+       attachvolume();
+       console.log(data);           // successful response
+   }
+ });
+}
+
+function attachvolume()
+{
+    var params = {
+  Device: "/dev/sdf", 
+  InstanceId: "i-077c5d6f06bef7006", 
+  VolumeId: "vol-07d61df4b2746fb4c"
+ };
+ ec2.attachVolume(params, function(err, data) {
+   if (err) console.log(err, err.stack); // an error occurred
+   else
+   {
+       startinstance();
+       console.log(data);           // successful response
+   }
+   
+ });
+}
+
+function startinstance()
+{
+   var params = {
+  InstanceIds: [
+     "i-077c5d6f06bef7006"
+  ]
+ };
+ ec2.startInstances(params, function(err, data) {
+   if (err) console.log(err, err.stack); // an error occurred
+   else     console.log(data);           // successful response
+ }); 
+}
+
+module.exports.handler = initiatebackup;
