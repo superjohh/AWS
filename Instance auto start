@@ -1,0 +1,55 @@
+var AWS = require('aws-sdk');
+AWS.config.update({region: 'ap-south-1'});
+var ec2 = new AWS.EC2({apiVersion: '2016-11-15'});
+var sns = new AWS.SNS({apiVersion: '2010-03-31'});
+
+function ec2autostart()
+{
+    sendstartemail();
+}
+function sendstartemail()
+{
+    var params = {
+  Message: 'Hi, the Machine is down. We will try to start it again.',
+  Subject: 'AWS Notification',
+  TopicArn: 'arn:aws:sns:ap-south-1:761837203663:awsnotifications'
+};
+sns.publish(params, function(err, data) {
+  if (err) console.log(err, err.stack); // an error occurred
+  else
+  {
+      startinstance();
+      console.log(data);           // successful response
+  }
+});
+}
+
+function startinstance()
+{
+    var params = {
+  InstanceIds: [
+     "i-077c5d6f06bef7006"
+  ]
+ };
+ ec2.startInstances(params, function(err, data) {
+   if (err) console.log(err, err.stack); // an error occurred
+   else
+   {
+       sendendemail();
+       console.log(data);           // successful response  
+   }
+ });
+}
+function sendendemail()
+{
+    var params = {
+  Message: 'Hi, The machine is back up.',
+  Subject: 'AWS Notification',
+  TopicArn: 'arn:aws:sns:ap-south-1:761837203663:awsnotifications'
+};
+sns.publish(params, function(err, data) {
+  if (err) console.log(err, err.stack); // an error occurred
+  else     console.log(data);           // successful response
+});
+}
+module.exports.handler = ec2autostart;
