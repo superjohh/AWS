@@ -1,0 +1,80 @@
+var AWS = require('aws-sdk');
+AWS.config.update({region: 'ap-south-1'});
+var ec2 = new AWS.EC2({apiVersion: '2016-11-15'});
+var sns = new AWS.SNS({apiVersion: '2010-03-31'});
+
+function launchbackupami()
+{
+    sendstartemail();
+}
+function sendstartemail()
+{
+    var params = {
+  Message: 'Hi, the Machine is terminated. We will try to relaunch it via AMI.',
+  Subject: 'AWS Notification',
+  TopicArn: 'arn:aws:sns:ap-south-1:761837203663:awsnotifications'
+};
+sns.publish(params, function(err, data) {
+  if (err) console.log(err, err.stack); // an error occurred
+  else
+  {
+      launchami();
+      console.log(data);           // successful response
+  }
+});
+}
+
+function launchami()
+{
+var params = {
+  BlockDeviceMappings: [
+     {
+    DeviceName: "/dev/sda1", 
+    Ebs: {
+     VolumeSize: 8
+    }
+   }
+  ], 
+  ImageId: "ami-09592e2d39d5737b1", 
+  InstanceType: "t2.micro", 
+  KeyName: "my-key-pair", 
+  MaxCount: 1, 
+  MinCount: 1, 
+  SecurityGroupIds: [
+     "sg-1a2b3c4d"
+  ], 
+  SubnetId: "subnet-6e7f829e", 
+  TagSpecifications: [
+     {
+    ResourceType: "instance", 
+    Tags: [
+       {
+      Key: "Purpose", 
+      Value: "test"
+     }
+    ]
+   }
+  ]
+ };
+ ec2.runInstances(params, function(err, data) {
+   if (err) console.log(err, err.stack); // an error occurred
+   else
+{
+    console.log(data);           // successful response
+    sendendemail();
+}   
+ });
+}
+function sendendemail()
+{
+    var params = {
+  Message: 'Hi, The machine has been successfully restored.',
+  Subject: 'AWS Notification',
+  TopicArn: 'arn:aws:sns:ap-south-1:761837203663:awsnotifications'
+};
+sns.publish(params, function(err, data) {
+  if (err) console.log(err, err.stack); // an error occurred
+  else     console.log(data);           // successful response
+});
+}
+module.exports.handler = launchbackupami;
