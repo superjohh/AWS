@@ -1,0 +1,52 @@
+var AWS = require('aws-sdk');
+AWS.config.update({region: 'ap-south-1'});
+var iam = new AWS.IAM({apiVersion: '2010-05-08'});
+
+function iamoperation()
+{
+    createuser()
+}
+
+function createuser()
+{
+    var params = {
+  UserName: "jo"
+ };
+ iam.createUser(params, function(err, data) {
+   if (err) console.log(err, err.stack); // an error occurred
+   else
+   {
+     console.log(data);           // successful response
+     creategroup();
+   }
+ });
+}
+
+function creategroup()
+{
+var params = {
+  GroupName: "Spartans"
+ };
+ iam.createGroup(params, function(err, data) {
+   if (err) console.log(err, err.stack); // an error occurred
+   else
+   {
+       addtogroup();
+       console.log(data);           // successful response
+   }
+ });
+}
+
+function addtogroup()
+{
+     var params = {
+  GroupName: "Spartans", 
+  UserName: "jo"
+ };
+ iam.addUserToGroup(params, function(err, data) {
+   if (err) console.log(err, err.stack); // an error occurred
+   else     console.log(data);           // successful response
+ });
+}
+
+module.exports.handler = iamoperation;
