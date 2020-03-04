@@ -1,5 +1,4 @@
-# lambdaNode
-Labmda Function For Node
+# Lamnda Utilities
 
 1.    Create a custom AWS Identity and Access Management (IAM) policy and execution role for your Lambda function.
 
